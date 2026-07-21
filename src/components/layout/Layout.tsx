@@ -1,4 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { ChevronRight, ChevronLeft } from 'lucide-react';
+import { AnimatePresence, motion } from 'motion/react';
 import { NavLink } from 'react-router-dom';
 import { LayoutDashboard, PawPrint, Syringe, Activity, Pill, FileText, Phone, Settings as SettingsIcon } from 'lucide-react';
 import { cn } from '../../lib/utils';
@@ -20,6 +22,7 @@ const navItems = [
 ];
 
 export default function Layout({ children }: LayoutProps) {
+  const [navPage, setNavPage] = useState(0);
   const user = useStore((state) => state.user);
 
   return (
@@ -84,28 +87,84 @@ export default function Layout({ children }: LayoutProps) {
         </div>
       </main>
 
-      {/* Bottom Navigation for mobile */}
+      
+            {/* Bottom Navigation for mobile */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white/90  backdrop-blur-lg border-t border-slate-200  z-50 pb-safe">
-        <div className="flex items-center justify-around p-2">
-          {navItems.slice(0, 5).map((item) => (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              className={({ isActive }) =>
-                cn(
-                  "flex flex-col items-center p-2 rounded-xl min-w-[64px] transition-all duration-200",
-                  isActive 
-                    ? "text-[#18C3D6]" 
-                    : "text-slate-400 hover:text-slate-900"
-                )
-              }
-            >
-              <item.icon className={cn("w-6 h-6 mb-1", "active:scale-95 transition-transform")} />
-              <span className="text-[10px] font-medium">{item.label}</span>
-            </NavLink>
-          ))}
+        <div className="flex items-center justify-around p-2 overflow-hidden relative">
+          <AnimatePresence mode="wait">
+            {navPage === 0 ? (
+              <motion.div
+                key="page0"
+                initial={{ x: -20, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                exit={{ x: -20, opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="flex items-center justify-around w-full"
+              >
+                {navItems.slice(0, 4).map((item) => (
+                  <NavLink
+                    key={item.path}
+                    to={item.path}
+                    className={({ isActive }) =>
+                      cn(
+                        "flex flex-col items-center p-2 rounded-xl min-w-[64px] transition-all duration-200",
+                        isActive 
+                          ? "text-[#18C3D6]" 
+                          : "text-slate-400 hover:text-slate-900"
+                      )
+                    }
+                  >
+                    <item.icon className={cn("w-6 h-6 mb-1", "active:scale-95 transition-transform")} />
+                    <span className="text-[10px] font-medium">{item.label}</span>
+                  </NavLink>
+                ))}
+                <button 
+                  onClick={() => setNavPage(1)}
+                  className="flex flex-col items-center p-2 rounded-xl min-w-[64px] transition-all duration-200 text-slate-400 hover:text-slate-900"
+                >
+                  <ChevronRight className="w-6 h-6 mb-1 active:scale-95 transition-transform" />
+                  <span className="text-[10px] font-medium">Mais</span>
+                </button>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="page1"
+                initial={{ x: 20, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                exit={{ x: 20, opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="flex items-center justify-around w-full"
+              >
+                <button 
+                  onClick={() => setNavPage(0)}
+                  className="flex flex-col items-center p-2 rounded-xl min-w-[64px] transition-all duration-200 text-slate-400 hover:text-slate-900"
+                >
+                  <ChevronLeft className="w-6 h-6 mb-1 active:scale-95 transition-transform" />
+                  <span className="text-[10px] font-medium">Voltar</span>
+                </button>
+                {navItems.slice(4, 8).map((item) => (
+                  <NavLink
+                    key={item.path}
+                    to={item.path}
+                    className={({ isActive }) =>
+                      cn(
+                        "flex flex-col items-center p-2 rounded-xl min-w-[64px] transition-all duration-200",
+                        isActive 
+                          ? "text-[#18C3D6]" 
+                          : "text-slate-400 hover:text-slate-900"
+                      )
+                    }
+                  >
+                    <item.icon className={cn("w-6 h-6 mb-1", "active:scale-95 transition-transform")} />
+                    <span className="text-[10px] font-medium">{item.label}</span>
+                  </NavLink>
+                ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </nav>
+
     </div>
   );
 }
