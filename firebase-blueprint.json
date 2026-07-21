@@ -1,0 +1,156 @@
+{
+  "entities": {
+    "Pet": {
+      "title": "Pet",
+      "description": "A pet profile",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "name": { "type": "string" },
+        "species": { "type": "string" },
+        "breed": { "type": "string" },
+        "gender": { "type": "string" },
+        "color": { "type": "string" },
+        "weight": { "type": "number" },
+        "birthDate": { "type": "string" },
+        "microchip": { "type": "string" },
+        "registryNumber": { "type": "string" },
+        "licenseNumber": { "type": "string" },
+        "isNeutered": { "type": "boolean" },
+        "allergies": { "type": "string" },
+        "notes": { "type": "string" },
+        "photoUrl": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["id", "userId", "name", "species", "breed", "gender", "color", "weight", "birthDate", "isNeutered", "createdAt"]
+    },
+    "Vaccine": {
+      "title": "Vaccine",
+      "description": "A vaccine record",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "petId": { "type": "string" },
+        "name": { "type": "string" },
+        "date": { "type": "string" },
+        "nextDueDate": { "type": "string" },
+        "veterinarian": { "type": "string" },
+        "clinic": { "type": "string" },
+        "manufacturer": { "type": "string" },
+        "batch": { "type": "string" },
+        "photoUrl": { "type": "string" },
+        "pdfUrl": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["id", "userId", "petId", "name", "date", "createdAt"]
+    },
+    "Medication": {
+      "title": "Medication",
+      "description": "A medication record",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "petId": { "type": "string" },
+        "name": { "type": "string" },
+        "dosage": { "type": "string" },
+        "frequency": { "type": "string" },
+        "time": { "type": "string" },
+        "startDate": { "type": "string" },
+        "endDate": { "type": "string" },
+        "notes": { "type": "string" },
+        "type": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["id", "userId", "petId", "name", "dosage", "frequency", "time", "startDate", "type", "createdAt"]
+    },
+    "Document": {
+      "title": "Document",
+      "description": "A document record",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "petId": { "type": "string" },
+        "name": { "type": "string" },
+        "type": { "type": "string" },
+        "dateAdded": { "type": "string" },
+        "fileUrl": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["id", "userId", "petId", "name", "type", "dateAdded", "fileUrl", "createdAt"]
+    },
+    "Contact": {
+      "title": "Contact",
+      "description": "A contact record",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "name": { "type": "string" },
+        "type": { "type": "string" },
+        "phone": { "type": "string" },
+        "whatsapp": { "type": "string" },
+        "email": { "type": "string" },
+        "address": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["id", "userId", "name", "type", "createdAt"]
+    },
+    "MedicalRecord": {
+      "title": "MedicalRecord",
+      "description": "A medical history record",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "petId": { "type": "string" },
+        "type": { "type": "string" },
+        "date": { "type": "string" },
+        "diagnosis": { "type": "string" },
+        "prescription": { "type": "string" },
+        "weight": { "type": "number" },
+        "temperature": { "type": "number" },
+        "notes": { "type": "string" },
+        "pdfUrl": { "type": "string" },
+        "photoUrl": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["id", "userId", "petId", "type", "date", "createdAt"]
+    }
+  },
+  "firestore": {
+    "pets/{petId}": {
+      "schema": { "$ref": "#/entities/Pet" },
+      "description": "Pets"
+    },
+    "vaccines/{vaccineId}": {
+      "schema": { "$ref": "#/entities/Vaccine" },
+      "description": "Vaccines"
+    },
+    "medications/{medicationId}": {
+      "schema": { "$ref": "#/entities/Medication" },
+      "description": "Medications"
+    },
+    "documents/{documentId}": {
+      "schema": { "$ref": "#/entities/Document" },
+      "description": "Documents"
+    },
+    "contacts/{contactId}": {
+      "schema": { "$ref": "#/entities/Contact" },
+      "description": "Contacts"
+    },
+    "medicalRecords/{recordId}": {
+      "schema": { "$ref": "#/entities/MedicalRecord" },
+      "description": "Medical Records"
+    }
+  }
+}

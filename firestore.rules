@@ -1,0 +1,186 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // --- PETS ---
+    function isValidPet(data) {
+      return data.keys().hasAll(['id', 'userId', 'name', 'species', 'breed', 'gender', 'color', 'weight', 'birthDate', 'isNeutered', 'createdAt']) &&
+        data.id is string && data.id.size() > 0 && data.id.size() <= 128 &&
+        data.userId is string && data.userId == request.auth.uid &&
+        data.name is string && data.name.size() > 0 && data.name.size() <= 100 &&
+        data.species is string && data.species.size() <= 50 &&
+        data.breed is string && data.breed.size() <= 100 &&
+        data.gender is string && data.gender.size() <= 20 &&
+        data.color is string && data.color.size() <= 50 &&
+        data.weight is number &&
+        data.birthDate is string && data.birthDate.size() <= 50 &&
+        data.isNeutered is bool &&
+        data.createdAt is string &&
+        // optional fields
+        (!('allergies' in data.keys()) || (data.allergies is string && data.allergies.size() <= 500)) &&
+        (!('notes' in data.keys()) || (data.notes is string && data.notes.size() <= 1000)) &&
+        (!('photoUrl' in data.keys()) || (data.photoUrl is string && data.photoUrl.size() <= 1048576)) &&
+        (!('microchip' in data.keys()) || (data.microchip is string && data.microchip.size() <= 100)) &&
+        (!('registryNumber' in data.keys()) || (data.registryNumber is string && data.registryNumber.size() <= 100)) &&
+        (!('licenseNumber' in data.keys()) || (data.licenseNumber is string && data.licenseNumber.size() <= 100)) &&
+        (!('updatedAt' in data.keys()) || (data.updatedAt is string));
+    }
+
+    match /pets/{petId} {
+      allow get: if isSignedIn() && isValidId(petId) && existing().userId == request.auth.uid;
+      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() && isValidId(petId) && isValidPet(incoming());
+      allow update: if isSignedIn() && isValidId(petId) && existing().userId == request.auth.uid && isValidPet(incoming()) && incoming().userId == existing().userId && incoming().createdAt == existing().createdAt && incoming().diff(existing()).affectedKeys().hasOnly(['name', 'species', 'breed', 'gender', 'color', 'weight', 'birthDate', 'isNeutered', 'allergies', 'notes', 'photoUrl', 'microchip', 'registryNumber', 'licenseNumber', 'updatedAt']);
+      allow delete: if isSignedIn() && isValidId(petId) && existing().userId == request.auth.uid;
+    }
+
+    // --- VACCINES ---
+    function isValidVaccine(data) {
+      return data.keys().hasAll(['id', 'userId', 'petId', 'name', 'date', 'createdAt']) &&
+        data.id is string && data.id.size() > 0 && data.id.size() <= 128 &&
+        data.userId is string && data.userId == request.auth.uid &&
+        data.petId is string && data.petId.size() > 0 && data.petId.size() <= 128 &&
+        data.name is string && data.name.size() > 0 && data.name.size() <= 100 &&
+        data.date is string && data.date.size() <= 50 &&
+        data.createdAt is string &&
+        // optional
+        (!('nextDueDate' in data.keys()) || (data.nextDueDate is string && data.nextDueDate.size() <= 50)) &&
+        (!('veterinarian' in data.keys()) || (data.veterinarian is string && data.veterinarian.size() <= 100)) &&
+        (!('clinic' in data.keys()) || (data.clinic is string && data.clinic.size() <= 100)) &&
+        (!('manufacturer' in data.keys()) || (data.manufacturer is string && data.manufacturer.size() <= 100)) &&
+        (!('batch' in data.keys()) || (data.batch is string && data.batch.size() <= 100)) &&
+        (!('photoUrl' in data.keys()) || (data.photoUrl is string && data.photoUrl.size() <= 1048576)) &&
+        (!('pdfUrl' in data.keys()) || (data.pdfUrl is string && data.pdfUrl.size() <= 1048576)) &&
+        (!('updatedAt' in data.keys()) || (data.updatedAt is string));
+    }
+
+    match /vaccines/{vaccineId} {
+      allow get: if isSignedIn() && isValidId(vaccineId) && existing().userId == request.auth.uid;
+      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() && isValidId(vaccineId) && isValidVaccine(incoming());
+      allow update: if isSignedIn() && isValidId(vaccineId) && existing().userId == request.auth.uid && isValidVaccine(incoming()) && incoming().userId == existing().userId && incoming().petId == existing().petId && incoming().createdAt == existing().createdAt && incoming().diff(existing()).affectedKeys().hasOnly(['name', 'date', 'nextDueDate', 'veterinarian', 'clinic', 'manufacturer', 'batch', 'photoUrl', 'pdfUrl', 'updatedAt']);
+      allow delete: if isSignedIn() && isValidId(vaccineId) && existing().userId == request.auth.uid;
+    }
+
+    // --- MEDICATIONS ---
+    function isValidMedication(data) {
+      return data.keys().hasAll(['id', 'userId', 'petId', 'name', 'dosage', 'frequency', 'time', 'startDate', 'type', 'createdAt']) &&
+        data.id is string && data.id.size() > 0 && data.id.size() <= 128 &&
+        data.userId is string && data.userId == request.auth.uid &&
+        data.petId is string && data.petId.size() > 0 && data.petId.size() <= 128 &&
+        data.name is string && data.name.size() > 0 && data.name.size() <= 100 &&
+        data.dosage is string && data.dosage.size() <= 100 &&
+        data.frequency is string && data.frequency.size() <= 100 &&
+        data.time is string && data.time.size() <= 50 &&
+        data.startDate is string && data.startDate.size() <= 50 &&
+        data.type is string && data.type.size() <= 50 &&
+        data.createdAt is string &&
+        // optional
+        (!('endDate' in data.keys()) || (data.endDate is string && data.endDate.size() <= 50)) &&
+        (!('notes' in data.keys()) || (data.notes is string && data.notes.size() <= 1000)) &&
+        (!('updatedAt' in data.keys()) || (data.updatedAt is string));
+    }
+
+    match /medications/{medicationId} {
+      allow get: if isSignedIn() && isValidId(medicationId) && existing().userId == request.auth.uid;
+      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() && isValidId(medicationId) && isValidMedication(incoming());
+      allow update: if isSignedIn() && isValidId(medicationId) && existing().userId == request.auth.uid && isValidMedication(incoming()) && incoming().userId == existing().userId && incoming().petId == existing().petId && incoming().createdAt == existing().createdAt && incoming().diff(existing()).affectedKeys().hasOnly(['name', 'dosage', 'frequency', 'time', 'startDate', 'endDate', 'type', 'notes', 'updatedAt']);
+      allow delete: if isSignedIn() && isValidId(medicationId) && existing().userId == request.auth.uid;
+    }
+
+    // --- DOCUMENTS ---
+    function isValidDocument(data) {
+      return data.keys().hasAll(['id', 'userId', 'petId', 'name', 'type', 'dateAdded', 'createdAt']) &&
+        data.id is string && data.id.size() > 0 && data.id.size() <= 128 &&
+        data.userId is string && data.userId == request.auth.uid &&
+        data.petId is string && data.petId.size() > 0 && data.petId.size() <= 128 &&
+        data.name is string && data.name.size() > 0 && data.name.size() <= 100 &&
+        data.type is string && data.type.size() <= 50 &&
+        data.dateAdded is string && data.dateAdded.size() <= 50 &&
+        data.createdAt is string &&
+        // optional
+        (!('fileUrl' in data.keys()) || (data.fileUrl is string && data.fileUrl.size() <= 1048576)) &&
+        (!('updatedAt' in data.keys()) || (data.updatedAt is string));
+    }
+
+    match /documents/{documentId} {
+      allow get: if isSignedIn() && isValidId(documentId) && existing().userId == request.auth.uid;
+      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() && isValidId(documentId) && isValidDocument(incoming());
+      allow update: if isSignedIn() && isValidId(documentId) && existing().userId == request.auth.uid && isValidDocument(incoming()) && incoming().userId == existing().userId && incoming().petId == existing().petId && incoming().createdAt == existing().createdAt && incoming().diff(existing()).affectedKeys().hasOnly(['name', 'type', 'dateAdded', 'fileUrl', 'updatedAt']);
+      allow delete: if isSignedIn() && isValidId(documentId) && existing().userId == request.auth.uid;
+    }
+
+    // --- CONTACTS ---
+    function isValidContact(data) {
+      return data.keys().hasAll(['id', 'userId', 'name', 'type', 'createdAt']) &&
+        data.id is string && data.id.size() > 0 && data.id.size() <= 128 &&
+        data.userId is string && data.userId == request.auth.uid &&
+        data.name is string && data.name.size() > 0 && data.name.size() <= 100 &&
+        data.type is string && data.type.size() <= 50 &&
+        data.createdAt is string &&
+        // optional
+        (!('phone' in data.keys()) || (data.phone is string && data.phone.size() <= 50)) &&
+        (!('whatsapp' in data.keys()) || (data.whatsapp is string && data.whatsapp.size() <= 50)) &&
+        (!('email' in data.keys()) || (data.email is string && data.email.size() <= 100)) &&
+        (!('address' in data.keys()) || (data.address is string && data.address.size() <= 500)) &&
+        (!('updatedAt' in data.keys()) || (data.updatedAt is string));
+    }
+
+    match /contacts/{contactId} {
+      allow get: if isSignedIn() && isValidId(contactId) && existing().userId == request.auth.uid;
+      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() && isValidId(contactId) && isValidContact(incoming());
+      allow update: if isSignedIn() && isValidId(contactId) && existing().userId == request.auth.uid && isValidContact(incoming()) && incoming().userId == existing().userId && incoming().createdAt == existing().createdAt && incoming().diff(existing()).affectedKeys().hasOnly(['name', 'type', 'phone', 'whatsapp', 'email', 'address', 'updatedAt']);
+      allow delete: if isSignedIn() && isValidId(contactId) && existing().userId == request.auth.uid;
+    }
+
+    // --- MEDICAL RECORDS ---
+    function isValidMedicalRecord(data) {
+      return data.keys().hasAll(['id', 'userId', 'petId', 'type', 'date', 'createdAt']) &&
+        data.id is string && data.id.size() > 0 && data.id.size() <= 128 &&
+        data.userId is string && data.userId == request.auth.uid &&
+        data.petId is string && data.petId.size() > 0 && data.petId.size() <= 128 &&
+        data.type is string && data.type.size() <= 50 &&
+        data.date is string && data.date.size() <= 50 &&
+        data.createdAt is string &&
+        // optional
+        (!('diagnosis' in data.keys()) || (data.diagnosis is string && data.diagnosis.size() <= 200)) &&
+        (!('prescription' in data.keys()) || (data.prescription is string && data.prescription.size() <= 1000)) &&
+        (!('weight' in data.keys()) || (data.weight is number)) &&
+        (!('temperature' in data.keys()) || (data.temperature is number)) &&
+        (!('notes' in data.keys()) || (data.notes is string && data.notes.size() <= 1000)) &&
+        (!('pdfUrl' in data.keys()) || (data.pdfUrl is string && data.pdfUrl.size() <= 1048576)) &&
+        (!('photoUrl' in data.keys()) || (data.photoUrl is string && data.photoUrl.size() <= 1048576)) &&
+        (!('updatedAt' in data.keys()) || (data.updatedAt is string));
+    }
+
+    match /medicalRecords/{recordId} {
+      allow get: if isSignedIn() && isValidId(recordId) && existing().userId == request.auth.uid;
+      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() && isValidId(recordId) && isValidMedicalRecord(incoming());
+      allow update: if isSignedIn() && isValidId(recordId) && existing().userId == request.auth.uid && isValidMedicalRecord(incoming()) && incoming().userId == existing().userId && incoming().petId == existing().petId && incoming().createdAt == existing().createdAt && incoming().diff(existing()).affectedKeys().hasOnly(['type', 'date', 'diagnosis', 'prescription', 'weight', 'temperature', 'notes', 'pdfUrl', 'photoUrl', 'updatedAt']);
+      allow delete: if isSignedIn() && isValidId(recordId) && existing().userId == request.auth.uid;
+    }
+  }
+}
